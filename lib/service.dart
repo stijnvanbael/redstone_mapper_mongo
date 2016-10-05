@@ -83,7 +83,14 @@ class MongoDbService<T> {
   Future<List<T>> find([dynamic selector]) {
     return mongoDb.find(collection, T, selector);
   }
-  
+
+  /**
+   *
+   */
+  Future<int> count([dynamic selector]) {
+    return mongoDb.count(collection, T, selector);
+  }
+
   /**
    * Wrapper for DbCollection.findOne().
    * 

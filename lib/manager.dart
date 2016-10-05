@@ -71,11 +71,11 @@ class MongoDb {
 
   /**
    * Wrapper for DbCollection.find().
-   * 
+   *
    * [collection] is the MongoDb collection where the query will be executed,
    * and it can be a String or a DbCollection. [selector] can be a Map, a SelectorBuilder,
    * or an encodable object. The query result will be decoded to List<[type]>.
-   */ 
+   */
   Future<List> find(dynamic collection, Type type, [dynamic selector]) {
     var dbCol = _collection(collection);
     if (selector != null && selector is! Map && selector is! SelectorBuilder) {
@@ -99,6 +99,21 @@ class MongoDb {
     }
     return dbCol.findOne(selector).then((result) =>
         _codec.decode(result, type));
+  }
+
+  /**
+   * Wrapper for DbCollection.count().
+   *
+   * [collection] is the MongoDb collection where the query will be executed,
+   * and it can be a String or a DbCollection. [selector] can be a Map, a SelectorBuilder,
+   * or an encodable object. The query result will be returned as an int.
+   */
+  Future<int> count(dynamic collection, Type type, dynamic selector) {
+    var dbCol = _collection(collection);
+    if (selector != null && selector is! Map && selector is! SelectorBuilder) {
+      selector = _codec.encode(selector);
+    }
+    return dbCol.count(selector);
   }
   
   /**

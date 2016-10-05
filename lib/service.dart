@@ -85,7 +85,10 @@ class MongoDbService<T> {
   }
 
   /**
+   * Wrapper for DbCollection.count().
    *
+   * [selector] can be a Map, a SelectorBuilder,
+   * or an encodable object.
    */
   Future<int> count([dynamic selector]) {
     return mongoDb.count(collection, T, selector);

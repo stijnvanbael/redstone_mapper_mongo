@@ -3,17 +3,15 @@ library mapper_mongodb_tests;
 import 'dart:async';
 import 'dart:convert' as conv;
 
-import 'package:test/test.dart';
-import 'package:mock/mock.dart';
-
-import 'package:redstone/redstone.dart';
-
 import 'package:connection_pool/connection_pool.dart';
-import 'package:redstone_mapper/mapper_factory.dart';
-import 'package:redstone_mapper_mongo/manager.dart';
-import 'package:redstone_mapper/database.dart';
-import 'package:redstone_mapper/plugin.dart';
+import 'package:mock/mock.dart';
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:redstone/redstone.dart';
+import 'package:redstone_mapper/database.dart';
+import 'package:redstone_mapper/mapper_factory.dart';
+import 'package:redstone_mapper/plugin.dart';
+import 'package:redstone_mapper_mongo/manager.dart';
+import 'package:test/test.dart';
 
 import 'redstone_service.dart';
 
@@ -130,14 +128,17 @@ main() {
       return new Future.value();
     });
 
-    var updtUser = new User()..username = 'new_username';
+    var updtUser = new User()
+      ..username = 'new_username';
     var encodedUpdtUser = {'username': 'new_username'};
 
     var testObj = new TestObject()
       ..id = "1"
       ..field = "value1";
-    testObj.innerObj = new TestObject()..field = "value2";
-    testObj.innerObj.innerObj = new TestObject()..field = "value3";
+    testObj.innerObj = new TestObject()
+      ..field = "value2";
+    testObj.innerObj.innerObj = new TestObject()
+      ..field = "value3";
 
     var encodedUpdtTestObj = {
       "id": "1",
@@ -194,6 +195,17 @@ main() {
       return dispatch(req).then((resp) {
         expect(resp.mockContent,
             equals(conv.JSON.encode([userJson, userJson, userJson])));
+      });
+    });
+
+    test("count", () {
+      mockCol
+          .when(callsTo("count", {"name": "John"}))
+          .alwaysReturn(new Future.value(15));
+
+      var req = new MockRequest("/count", queryParameters: {"name": "John"});
+      return dispatch(req).then((resp) {
+        expect(resp.mockContent, "15");
       });
     });
 

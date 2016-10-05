@@ -1,5 +1,6 @@
 library redstone_mongodb_service;
 
+import 'dart:async';
 import 'package:redstone/redstone.dart';
 import 'package:redstone_mapper/mapper.dart';
 import 'package:redstone_mapper/plugin.dart';
@@ -55,3 +56,6 @@ find() => _service.find();
 
 @Route("/save", methods: const [POST])
 save(@Decode() User user) => _service.save(user).then((_) => {"success": true});
+
+@Route("/count")
+Future<int> count(@QueryParam("name") String name) => _service.count({"name": name});

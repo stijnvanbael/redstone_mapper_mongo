@@ -84,6 +84,22 @@ class MongoDb {
     return dbCol.find(selector).toList().then((result) =>
         _codec.decode(result, type));
   }
+
+  /**
+   * Wrapper for DbCollection.find().
+   *
+   * [collection] is the MongoDb collection where the query will be executed,
+   * and it can be a String or a DbCollection. [selector] can be a Map, a SelectorBuilder,
+   * or an encodable object. The query result will be decoded to Stream<[type]>.
+   */
+  Stream stream(dynamic collection, Type type, [dynamic selector]) {
+    var dbCol = _collection(collection);
+    if (selector != null && selector is! Map && selector is! SelectorBuilder) {
+      selector = _codec.encode(selector);
+    }
+    return dbCol.find(selector).map((result) =>
+        _codec.decode(result, type));
+  }
   
   /**
    * Wrapper for DbCollection.findOne().

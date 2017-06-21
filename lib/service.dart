@@ -85,6 +85,16 @@ class MongoDbService<T> {
   }
 
   /**
+   * Wrapper for DbCollection.find().
+   *
+   * [selector] can be a Map, a SelectorBuilder,
+   * or an encodable object.
+   */
+  Stream<T> stream([dynamic selector]) {
+    return mongoDb.stream(collection, T, selector);
+  }
+
+  /**
    * Wrapper for DbCollection.count().
    *
    * [selector] can be a Map, a SelectorBuilder,

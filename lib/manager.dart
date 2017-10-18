@@ -10,7 +10,6 @@ import 'package:redstone_mapper_mongo/metadata.dart';
 
 ///Manage connections with a MongoDB instance
 class MongoDbManager implements DatabaseManager<MongoDb> {
-
   _MongoDbPool _pool;
 
   /**
@@ -27,15 +26,12 @@ class MongoDbManager implements DatabaseManager<MongoDb> {
   @override
   void closeConnection(MongoDb connection, {error}) {
     var invalidConn = error is ConnectionException;
-    _pool.releaseConnection(
-        connection._managedConn,
-        markAsInvalid: invalidConn);
+    _pool.releaseConnection(connection._managedConn, markAsInvalid: invalidConn);
   }
 
   @override
   Future<MongoDb> getConnection() {
-    return _pool.getConnection().then((managedConn) =>
-    new MongoDb(managedConn));
+    return _pool.getConnection().then((managedConn) => new MongoDb(managedConn));
   }
 }
 
@@ -48,7 +44,6 @@ class MongoDbManager implements DatabaseManager<MongoDb> {
  *
  */
 class MongoDb {
-
   ManagedConnection _managedConn;
 
   MongoDb(this._managedConn);
@@ -62,12 +57,10 @@ class MongoDb {
   }
 
   ///Encode [data] to a Map or List.
-  dynamic encode(dynamic data) =>
-      _codec.encode(data);
+  dynamic encode(dynamic data) => _codec.encode(data);
 
   ///Decode [data] to one or more objects of type [type].
-  dynamic decode(dynamic data, Type type) =>
-      _codec.decode(data, type);
+  dynamic decode(dynamic data, Type type) => _codec.decode(data, type);
 
   /**
    * Wrapper for DbCollection.find().
@@ -81,8 +74,7 @@ class MongoDb {
     if (selector != null && selector is! Map && selector is! SelectorBuilder) {
       selector = _codec.encode(selector);
     }
-    return dbCol.find(selector).toList().then((result) =>
-        _codec.decode(result, type));
+    return dbCol.find(selector).toList().then((result) => _codec.decode(result, type));
   }
 
   /**
@@ -97,8 +89,20 @@ class MongoDb {
     if (selector != null && selector is! Map && selector is! SelectorBuilder) {
       selector = _codec.encode(selector);
     }
-    return dbCol.find(selector).map((result) =>
-        _codec.decode(result, type));
+    return dbCol.find(selector).map((result) => _codec.decode(result, type));
+  }
+
+  /**
+   * Wrapper for DbCollection.aggregate().
+   *
+   * [collection] is the MongoDb collection where the query will be executed,
+   * and it can be a String or a DbCollection. [pipeline] is a list of aggregations to apply.
+   * The query result will be decoded to Map<dynamic,[type]>.
+   */
+  Future<List> aggregate(dynamic collection, Type type, [List pipeline = const []]) async {
+    var dbCol = _collection(collection);
+    var response = await dbCol.aggregate(pipeline);
+    return response['result'].map((result) => _codec.decode(result, type)).toList();
   }
 
   /**
@@ -124,8 +128,7 @@ class MongoDb {
     if (selector != null && selector is! Map && selector is! SelectorBuilder) {
       selector = _codec.encode(selector);
     }
-    return dbCol.findOne(selector).then((result) =>
-        _codec.decode(result, type));
+    return dbCol.findOne(selector).then((result) => _codec.decode(result, type));
   }
 
   /**
@@ -195,9 +198,7 @@ class MongoDb {
    * [override] is false, then the codec will produce a ModifierBuilder, and only
    * non null fields will be updated, otherwise, the entire document will be updated.
    */
-  Future update(dynamic collection, dynamic selector, Object obj, {bool override: true,
-    bool upsert: false,
-    bool multiUpdate: false}) {
+  Future update(dynamic collection, dynamic selector, Object obj, {bool override: true, bool upsert: false, bool multiUpdate: false}) {
     var dbCol = _collection(collection);
     if (selector != null && selector is! Map && selector is! SelectorBuilder) {
       selector = _codec.encode(selector);
@@ -209,8 +210,7 @@ class MongoDb {
         obj = _updtCodec.encode(obj);
       }
     }
-    return dbCol.update(selector, obj,
-        upsert: upsert, multiUpdate: multiUpdate);
+    return dbCol.update(selector, obj, upsert: upsert, multiUpdate: multiUpdate);
   }
 
   /**
@@ -228,6 +228,13 @@ class MongoDb {
     return dbCol.remove(selector);
   }
 
+  /**
+   * Wrapper for Db.createIndex().
+   */
+  Future<Map> createIndex(DbCollection collection, Map<String, dynamic> keys) {
+    return innerConn.createIndex(collection.collectionName, keys: keys);
+  }
+
   DbCollection _collection(collection) {
     if (collection is String) {
       collection = innerConn.collection(collection);
@@ -237,7 +244,6 @@ class MongoDb {
 }
 
 class _MongoDbPool extends ConnectionPool<Db> {
-
   String uri;
 
   _MongoDbPool(String this.uri, int poolSize) : super(poolSize);
@@ -254,9 +260,7 @@ class _MongoDbPool extends ConnectionPool<Db> {
   }
 }
 
-
-FieldDecoder _fieldDecoder = (Object data, String fieldName,
-    Field fieldInfo, List metadata) {
+FieldDecoder _fieldDecoder = (Object data, String fieldName, Field fieldInfo, List metadata) {
   String name = fieldInfo.model;
   if (name == null) {
     name = fieldName;
@@ -272,8 +276,7 @@ FieldDecoder _fieldDecoder = (Object data, String fieldName,
   return value;
 };
 
-FieldEncoder _fieldEncoder = (Map data, String fieldName, Field fieldInfo,
-    List metadata, Object value) {
+FieldEncoder _fieldEncoder = (Map data, String fieldName, Field fieldInfo, List metadata, Object value) {
   String name = fieldInfo.model;
   if (name == null) {
     name = fieldName;
@@ -293,8 +296,7 @@ FieldEncoder _fieldEncoder = (Map data, String fieldName, Field fieldInfo,
   }
 };
 
-FieldEncoder _updtFieldEncoder = (Map data, String fieldName, Field fieldInfo,
-    List metadata, Object value) {
+FieldEncoder _updtFieldEncoder = (Map data, String fieldName, Field fieldInfo, List metadata, Object value) {
   if (value == null) {
     return;
   }
@@ -324,7 +326,6 @@ FieldEncoder _updtFieldEncoder = (Map data, String fieldName, Field fieldInfo,
   }
 };
 
-GenericTypeCodec _codec = new GenericTypeCodec(fieldDecoder: _fieldDecoder,
-    fieldEncoder: _fieldEncoder);
+GenericTypeCodec _codec = new GenericTypeCodec(fieldDecoder: _fieldDecoder, fieldEncoder: _fieldEncoder);
 
 GenericTypeCodec _updtCodec = new GenericTypeCodec(fieldEncoder: _updtFieldEncoder);

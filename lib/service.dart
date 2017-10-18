@@ -44,15 +44,13 @@ import 'package:redstone_mapper_mongo/manager.dart';
  *
  */
 class MongoDbService<T> {
-
   MongoDb _mongoDb = null;
 
   ///The name of the MongoDB collection associated with this service
   final String collectionName;
 
   ///The MongoDB connection wrapper
-  MongoDb get mongoDb =>
-      _mongoDb != null ? _mongoDb : request.attributes["dbConn"];
+  MongoDb get mongoDb => _mongoDb != null ? _mongoDb : request.attributes["dbConn"];
 
   ///The MongoDb connection
   Db get innerConn => mongoDb.innerConn;
@@ -84,7 +82,6 @@ class MongoDbService<T> {
     return mongoDb.find(collection, T, selector);
   }
 
-
   /**
    * Wrapper for DbCollection.distinct()
    *
@@ -103,6 +100,15 @@ class MongoDbService<T> {
    */
   Stream<T> stream([dynamic selector]) {
     return mongoDb.stream(collection, T, selector);
+  }
+
+  /**
+   * Wrapper for DbCollection.aggregate().
+   *
+   * [pipeline] is a list of aggregations to apply.
+   */
+  Future<List> aggregate(List pipeline, {Type asType}) {
+    return mongoDb.aggregate(collection, asType != null ? asType : T, pipeline);
   }
 
   /**
@@ -160,12 +166,8 @@ class MongoDbService<T> {
    * if [override] is false, then only non null fields will be updated,
    * otherwise, the entire document will be replaced.
    */
-  Future update(dynamic selector, T obj, {bool override: true,
-    bool upsert: false,
-    bool multiUpdate: false}) {
-    return mongoDb.update(collection, selector, obj,
-        override: override, upsert: upsert,
-        multiUpdate: multiUpdate);
+  Future update(dynamic selector, T obj, {bool override: true, bool upsert: false, bool multiUpdate: false}) {
+    return mongoDb.update(collection, selector, obj, override: override, upsert: upsert, multiUpdate: multiUpdate);
   }
 
   /**
@@ -176,5 +178,12 @@ class MongoDbService<T> {
    */
   Future remove(dynamic selector) {
     return mongoDb.remove(collection, selector);
+  }
+
+  /**
+   * Wrapper for Db.createIndex().
+   */
+  Future createIndex(Map<String, dynamic> keys) {
+    return mongoDb.createIndex(collection, keys);
   }
 }
